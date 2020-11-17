@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: elastic-demo
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jsonb-example?useSSL=false
+    username: developer
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
