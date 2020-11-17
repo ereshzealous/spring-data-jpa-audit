@@ -7,6 +7,8 @@ import com.postgres.jsonb.user.entity.AuditHistory;
 import com.postgres.jsonb.user.repository.AuditHistoryRepository;
 
 import javax.persistence.PostPersist;
+import javax.persistence.PostRemove;
+import javax.persistence.PostUpdate;
 import javax.persistence.PrePersist;
 import javax.persistence.PreRemove;
 import javax.persistence.PreUpdate;
@@ -28,14 +30,14 @@ public class EntityListener  {
     	perform(new AuditEntry(target.getClass().getSimpleName(),target,Action.INSERTED));
     }
 
-    @PreUpdate
-    public void preUpdate(Auditable<Long> target) {
+    @PostUpdate
+    public void postUpdate(Auditable<Long> target) {
 
     	perform(new AuditEntry(target.getClass().getSimpleName(),target,Action.UPDATED));
     }
 
-    @PreRemove
-    public void preRemove(Auditable<Long> target) {
+    @PostRemove
+    public void postRemove(Auditable<Long> target) {
     	perform(new AuditEntry(target.getClass().getSimpleName(),target,Action.DELETED));
     }
     
