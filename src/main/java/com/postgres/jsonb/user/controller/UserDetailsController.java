@@ -2,13 +2,16 @@ package com.postgres.jsonb.user.controller;
 
 import com.postgres.jsonb.user.model.WSUserDetailsRequest;
 import com.postgres.jsonb.user.model.WSUserDetailsResponse;
+import com.postgres.jsonb.user.model.WSUserSearchResponse;
 import com.postgres.jsonb.user.service.UserDetailsService;
 import com.postgres.jsonb.user.util.FrequencyEnum;
+import com.postgres.jsonb.user.vo.UserDetailsSearchVO;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +41,11 @@ public class UserDetailsController {
 	@GetMapping("/data")
 	public void dataSeed() {
 		userDetailsService.dataSeed();
+	}
+
+	@PostMapping("/users/search")
+	public ResponseEntity<WSUserSearchResponse> searchUsers(@RequestBody UserDetailsSearchVO searchVO) {
+		return ResponseEntity.ok(userDetailsService.searchUsers(searchVO));
 	}
 
 	@DeleteMapping("/user/{id}")

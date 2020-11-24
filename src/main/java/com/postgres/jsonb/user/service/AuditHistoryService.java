@@ -1,8 +1,5 @@
 package com.postgres.jsonb.user.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
@@ -12,18 +9,19 @@ import com.postgres.jsonb.user.model.WSAuditHistoryDetails;
 import com.postgres.jsonb.user.model.WSAuditHistoryRequest;
 import com.postgres.jsonb.user.model.WSAuditHistoryResponse;
 import com.postgres.jsonb.user.repository.AuditHistoryRepository;
-import com.postgres.jsonb.user.repository.specification.UserAuditHistorySpecification;
+import com.postgres.jsonb.user.repository.specification.AuditHistorySpecification;
 import com.postgres.jsonb.user.vo.AuditHistorySearchVO;
 import com.postgres.jsonb.user.vo.AuditHistoryVO;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,14 +45,85 @@ public class AuditHistoryService {
 		return auditHistoryRepository.getOne(id);
 	}
 
+	private List<String> retrieveIdsForFilterQuery(WSAuditHistoryRequest request) {
+		String entityName = StringUtils.upperCase(request.getEntityName());
+		request.setEntityName(entityName);
+		if (request.getFromDate() != null && request.getToDate() != null && StringUtils.isBlank(request.getQuery())) {
+			return auditHistoryRepository.findAuditHistoriesByModifiedDate(request.getFromDate(), request.getToDate(),
+			                                                               StringUtils.upperCase(request.getEntityName()));
+		}
+		if (request.getFromDate() == null && StringUtils.isNotBlank(request.getQuery())) {
+			request.setQuery("%" + request.getQuery() + "%");
+			request.setEntityName("%" + entityName + "%");
+			return auditHistoryRepository.findAuditHistoryByQuery(request.getQuery(), request.getEntityName());
+		}
+		if (request.getFromDate() != null && request.getToDate() != null && StringUtils.isNotBlank(request.getQuery())) {
+			request.setQuery("%" + request.getQuery() + "%");
+			request.setEntityName("%" + entityName + "%");
+			return auditHistoryRepository.findAuditHistoryByQueryAndModifiedDate(request.getQuery(), request.getEntityName(),
+			                                                                     request.getFromDate(), request.getToDate());
+		}
+		return Collections.emptyList();
+	}
+
 	public WSAuditHistoryResponse getAuditHistoryOfUserId(WSAuditHistoryRequest request) {
 		WSAuditHistoryResponse response = new WSAuditHistoryResponse();
-		List<String> allIds = auditHistoryRepository.findAuditHistoriesByModifiedDate(request.getFromDate(), request.getToDate(), request.getEntityName());
+		String entityName = StringUtils.upperCase(request.getEntityName());
+		List<String> allIds = retrieveIdsForFilterQuery(request);
+		request.setEntityName(entityName);
 		allIds = allIds.stream().distinct().collect(Collectors.toList());
+		List<String> ids = getIdsFromGrouping(request, allIds);
+		if (CollectionUtils.isNotEmpty(ids)) {
+			List<AuditHistory> auditHistories = getAuditHistories(request, ids);
+			List<AuditHistoryVO> auditHistoryVOS;
+			List<WSAuditHistoryDetails> historyDetails = new ArrayList<>();
+			auditHistoryVOS = auditHistories.stream().map(AuditHistoryVO::new).collect(Collectors.toList());
+			for (String id : ids) {
+				List<AuditHistoryVO> historyVOS = auditHistoryVOS.stream().filter(data -> id.equalsIgnoreCase((String) data.getContent().get("id"))).
+						collect(Collectors.toList());
+				WSAuditHistoryDetails auditHistoryDetails = createAuditHistoryDetails(auditHistories, auditHistoryVOS, id, historyVOS);
+				historyDetails.add(auditHistoryDetails);
+			}
+			response.setHistoryDetails(historyDetails);
+			response.setTotalRecords(NumberUtils.toLong(String.valueOf(allIds.size())));
+		}
+		return response;
+	}
+
+	private WSAuditHistoryDetails createAuditHistoryDetails(List<AuditHistory> auditHistories, List<AuditHistoryVO> auditHistoryVOS, String id,
+	                                                        List<AuditHistoryVO> historyVOS) {
+		WSAuditHistoryDetails auditHistoryDetails = null;
+		if (CollectionUtils.isNotEmpty(historyVOS)) {
+			List<WSAuditHistoryChangeLog> changeLogs = new ArrayList<>();
+			auditHistoryDetails = new WSAuditHistoryDetails();
+			auditHistoryDetails.setEntity(historyVOS.get(0).getEntityName());
+			auditHistoryDetails.setEntityId(id);
+			WSAuditHistoryChangeLog firstRecordChangeLog = createChangeLogForFirstRecord(auditHistoryVOS.get(0));
+			changeLogs.add(firstRecordChangeLog);
+			for (int indexValue = 1; indexValue < auditHistories.size(); indexValue++) {
+				WSAuditHistoryChangeLog auditHistoryChangeLog = createChangeLogForAlternateRecords(auditHistoryVOS.get(indexValue - 1),
+				                                                                                   auditHistoryVOS.get(indexValue));
+				changeLogs.add(auditHistoryChangeLog);
+			}
+			auditHistoryDetails.setChangeLogs(changeLogs);
+		}
+		return auditHistoryDetails;
+	}
+
+	private List<AuditHistory> getAuditHistories(WSAuditHistoryRequest request, List<String> ids) {
+		AuditHistorySearchVO auditHistorySearchVO = new AuditHistorySearchVO();
+		auditHistorySearchVO.setEntityName(request.getEntityName());
+		auditHistorySearchVO.setIds(ids.stream().map(Object::toString).collect(Collectors.toList()));
+		AuditHistorySpecification historySpecification = new AuditHistorySpecification(auditHistorySearchVO);
+		List<AuditHistory> auditHistories = auditHistoryRepository.findAll(historySpecification);
+		return auditHistories;
+	}
+
+	private List<String> getIdsFromGrouping(WSAuditHistoryRequest request, List<String> allIds) {
 		AtomicInteger offset = new AtomicInteger();
 		Collection<List<String>> collections = allIds.stream()
-		                 .collect(Collectors.groupingBy(it -> offset.getAndIncrement() / request.getSize()))
-		                 .values();
+		                                             .collect(Collectors.groupingBy(it -> offset.getAndIncrement() / request.getSize()))
+		                                             .values();
 		List<String> ids = new ArrayList<>();
 		Integer index = 0;
 		for (Collection collection : collections) {
@@ -64,43 +133,7 @@ public class AuditHistoryService {
 			}
 			index++;
 		}
-		if (CollectionUtils.isNotEmpty(ids)) {
-			UserAuditHistorySpecification historySpecification = new UserAuditHistorySpecification(new AuditHistorySearchVO(ids.stream().map(Object::toString).collect(
-					Collectors.toList()), request.getEntityName()));
-			List<AuditHistory> auditHistories = auditHistoryRepository.findAll(historySpecification);
-			List<AuditHistoryVO> auditHistoryVOS;
-			if (CollectionUtils.isNotEmpty(auditHistories)) {
-				List<WSAuditHistoryDetails> historyDetails = new ArrayList<>();
-				auditHistoryVOS = auditHistories.stream().map(AuditHistoryVO::new).collect(Collectors.toList());
-				for (String id : ids) {
-					WSAuditHistoryDetails auditHistoryDetails = null;
-					List<AuditHistoryVO> historyVOS = auditHistoryVOS.stream().filter(data -> id.equalsIgnoreCase((String) data.getContent().get("id"))).collect(
-							Collectors.toList());
-					if (CollectionUtils.isNotEmpty(historyVOS)) {
-						List<WSAuditHistoryChangeLog> changeLogs = new ArrayList<>();
-						auditHistoryDetails = new WSAuditHistoryDetails();
-						auditHistoryDetails.setEntity(historyVOS.get(0).getEntityName());
-						auditHistoryDetails.setEntityId(id);
-						WSAuditHistoryChangeLog firstRecordChangeLog = createChangeLogForFirstRecord(auditHistoryVOS.get(0));
-						changeLogs.add(firstRecordChangeLog);
-						for (int indexValue = 1; indexValue < auditHistories.size(); indexValue++) {
-							WSAuditHistoryChangeLog auditHistoryChangeLog = createChangeLogForAlternateRecords(auditHistoryVOS.get(indexValue - 1),
-							                                                                                   auditHistoryVOS.get(indexValue));
-							changeLogs.add(auditHistoryChangeLog);
-						}
-						auditHistoryDetails.setChangeLogs(changeLogs);
-					}
-					historyDetails.add(auditHistoryDetails);
-				}
-				response.setHistoryDetails(historyDetails);
-				response.setTotalRecords(NumberUtils.toLong(String.valueOf(allIds.size())));
-			}
-		}
-		return response;
-	}
-
-	public Long getIdFromMap(Map<String, Object> map) {
-		return Long.valueOf((Integer) map.getOrDefault("id", NumberUtils.LONG_MINUS_ONE));
+		return ids;
 	}
 
 	private WSAuditHistoryChangeLog createChangeLogForFirstRecord(AuditHistoryVO auditHistory) {
@@ -124,16 +157,4 @@ public class AuditHistoryService {
 		auditHistoryChangeLog.setAuditAction(rightBoundary.getAction().toString());
 		return auditHistoryChangeLog;
 	}
-
-	private Map<String, Object> serializeAuditContentAsMap(JsonNode entityContent) {
-		TypeReference<Map<String, Object>> type = new TypeReference<Map<String, Object>>() {};
-		Map<String, Object> mapData = new HashMap<>();
-		try {
-			mapData = objectMapper.readValue(objectMapper.writeValueAsString(entityContent), type);
-		} catch (JsonProcessingException e) {
-
-		}
-		return mapData;
-	}
-
 }

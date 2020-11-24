@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
@@ -15,5 +16,8 @@ import java.util.List;
 public class AuditHistorySearchVO {
 	private List<String> ids;
 	private String entityName;
+	private ZonedDateTime startDate;
+	private ZonedDateTime endDate;
+	private String searchString;
 
 }

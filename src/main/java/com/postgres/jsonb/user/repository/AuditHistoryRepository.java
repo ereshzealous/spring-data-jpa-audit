@@ -15,7 +15,18 @@ import java.util.List;
  **/
 public interface AuditHistoryRepository extends JpaRepository<AuditHistory, Long>, JpaSpecificationExecutor<AuditHistory> {
 
-	@Query(value = "SELECT entity_content ->> 'id' as id FROM audit_history where modified_date >= :fromDate and modified_date <= :toDate and entity_name = :entity " +
+	@Query(value = "SELECT entity_content ->> 'id' AS id FROM audit_history WHERE modified_date >= :fromDate AND modified_date <= :toDate AND UPPER(entity_name) = :entity " +
 			"ORDER BY modified_date DESC", nativeQuery = true)
 	List<String> findAuditHistoriesByModifiedDate(@Param("fromDate") ZonedDateTime fromDate, @Param("toDate") ZonedDateTime toDate, @Param("entity") String entity);
+
+	@Query(value = "SELECT entity_content ->> 'id' AS id FROM audit_history WHERE (UPPER(jsonb_extract_path_text(entity_content, 'firstName')) LIKE :query OR " +
+			"UPPER(jsonb_extract_path_text(entity_content, 'lastName')) LIKE :query OR UPPER(jsonb_extract_path_text(entity_content, 'securityNumber')) LIKE :query) " +
+			"AND UPPER(entity_name) LIKE :entity ORDER BY modified_date DESC", nativeQuery = true)
+	List<String> findAuditHistoryByQuery(@Param("query") String query, @Param("entity") String entity);
+
+	@Query(value = "SELECT entity_content ->> 'id' AS id FROM audit_history WHERE (UPPER(jsonb_extract_path_text(entity_content, 'firstName')) LIKE :query OR " +
+			"UPPER(jsonb_extract_path_text(entity_content, 'lastName')) LIKE :query OR UPPER(jsonb_extract_path_text(entity_content, 'securityNumber')) LIKE :query) " +
+			"AND UPPER(entity_name) LIKE :entity AND (modified_date >= :fromDate AND modified_date <= :toDate) ORDER BY modified_date DESC", nativeQuery = true)
+	List<String> findAuditHistoryByQueryAndModifiedDate(@Param("query") String query, @Param("entity") String entity, @Param("fromDate") ZonedDateTime fromDate,
+	                                                    @Param("toDate") ZonedDateTime toDate);
 }

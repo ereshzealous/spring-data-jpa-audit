@@ -2,15 +2,21 @@ package com.postgres.jsonb.user.service;
 
 import com.postgres.jsonb.user.entity.UserDetails;
 import com.postgres.jsonb.user.entity.UserPreference;
+import com.postgres.jsonb.user.model.WSUserDetails;
 import com.postgres.jsonb.user.model.WSUserDetailsRequest;
 import com.postgres.jsonb.user.model.WSUserDetailsResponse;
 import com.postgres.jsonb.user.model.WSUserPreference;
+import com.postgres.jsonb.user.model.WSUserSearchResponse;
 import com.postgres.jsonb.user.repository.UserDetailsRepository;
+import com.postgres.jsonb.user.repository.specification.UserDetailsSpecification;
 import com.postgres.jsonb.user.util.FrequencyEnum;
+import com.postgres.jsonb.user.vo.UserDetailsSearchVO;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,7 +24,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -49,6 +54,18 @@ public class UserDetailsService {
 	public void seedData() {
 		List<UserDetails> userDetails = IntStream.range(0, 10000).mapToObj(index  -> this.randomUserDetails(index)).collect(Collectors.toList());
 		userDetailsRepository.saveAll(userDetails);
+	}
+
+	public WSUserSearchResponse searchUsers(UserDetailsSearchVO searchVO) {
+		WSUserSearchResponse response = new WSUserSearchResponse();
+		Page<UserDetails> userDetailsPage = userDetailsRepository.findAll(new UserDetailsSpecification(searchVO), PageRequest.of(searchVO.getPage(), searchVO.getSize()));
+		if (userDetailsPage != null) {
+			List<UserDetails> userDetails = userDetailsPage.getContent();
+			List<WSUserDetails> details = userDetails.stream().map(WSUserDetails::new).collect(Collectors.toList());
+			response.setTotalRecords(userDetailsPage.getTotalElements());
+			response.setUserDetails(details);
+		}
+		return response;
 	}
 
 	private UserDetails randomUserDetails(Integer index) {

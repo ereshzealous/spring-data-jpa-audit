@@ -17,11 +17,11 @@ import java.util.List;
 /**
  * Created on 18/November/2020 By Author Eresh, Gorantla
  **/
-public class UserAuditHistorySpecification implements Specification<AuditHistory> {
+public class AuditHistorySpecification implements Specification<AuditHistory> {
 
 	private AuditHistorySearchVO searchVO;
 
-	public UserAuditHistorySpecification(AuditHistorySearchVO searchVO) {
+	public AuditHistorySpecification(AuditHistorySearchVO searchVO) {
 		this.searchVO = searchVO;
 	}
 
@@ -34,6 +34,7 @@ public class UserAuditHistorySpecification implements Specification<AuditHistory
 			                                                          root.get("content"), builder.literal("id")).in(searchVO.getIds())));
 		}
 		query.orderBy(builder.desc(root.get("modifiedDate")));
+		query.multiselect(root.get("id"), root.get("action"));
 		return builder.and(predicates.toArray(new Predicate[predicates.size()]));
 	}
 }
