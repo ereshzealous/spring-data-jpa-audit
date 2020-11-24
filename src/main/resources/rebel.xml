@@ -6,12 +6,12 @@
 -->
 <application generated-by="intellij" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.zeroturnaround.com" xsi:schemaLocation="http://www.zeroturnaround.com http://update.zeroturnaround.com/jrebel/rebel-2_3.xsd">
 
-	<id>demo</id>
+	<id>spring-data-jpa-audit</id>
 
 	<classpath>
-		<dir name="/Users/ereshgorantla/Documents/Dev/My Work/postgres-jsonb/build/classes/java/main">
+		<dir name="/Users/ereshgorantla/Documents/Dev/My Work/spring-work/spring-data-jpa-audit/build/resources/main">
 		</dir>
-		<dir name="/Users/ereshgorantla/Documents/Dev/My Work/postgres-jsonb/build/resources/main">
+		<dir name="/Users/ereshgorantla/Documents/Dev/My Work/spring-work/spring-data-jpa-audit/build/classes/java/main">
 		</dir>
 	</classpath>
 

@@ -1,6 +1,6 @@
 package com.postgres.jsonb.user.entity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.postgres.jsonb.user.audit.Action;
 import com.postgres.jsonb.user.audit.AuditEntry;
@@ -17,7 +17,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
@@ -29,11 +28,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name="audit_history")
@@ -47,40 +43,42 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuditHistory implements Serializable {
-	
-	private static final long serialVersionUID =  7237091231517057323L;
-	
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(name="entity_name")
-    private String name;
-    
-    @Column(name= "action_performed")
-    @Enumerated(EnumType.STRING)
-    private Action action;
 
-    @Column(name = "entity_content",columnDefinition ="jsonb")
-    @Type(type = "jsonb")
-    private EntityContent  content;
+	private static final long serialVersionUID = 7237091231517057323L;
 
-    @CreatedBy
-    @Column(name = "modified_by")
-    private Long modifiedBy;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @CreationTimestamp
-    @Column(name = "modified_date")
-    private ZonedDateTime modifiedDate;
+	@Column(name = "entity_name")
+	private String name;
 
-    public AuditHistory(AuditEntry entry) {
-        withName(entry.getName()).withAction(entry.getAction()).withContent(generateEntityContent(entry.getContent()));
-    }
+	@Column(name = "action_performed")
+	@Enumerated(EnumType.STRING)
+	private Action action;
 
-    private EntityContent generateEntityContent(Object object) {
-    	UserDetails userDetails = (UserDetails) object;
-    	return new UserDetailsContent(userDetails);
-    }
+	@Column(name = "entity_content", columnDefinition = "jsonb")
+	@Type(type = "jsonb")
+	private JsonNode content;
+
+	@CreatedBy
+	@Column(name = "modified_by")
+	private Long modifiedBy;
+
+	@CreationTimestamp
+	@Column(name = "modified_date")
+	private ZonedDateTime modifiedDate;
+
+	public AuditHistory(AuditEntry entry) {
+		withName(entry.getName()).withAction(entry.getAction());
+	}
+
+	private JsonNode generateEntityContent(Object object) {
+		ObjectMapper objectMapper = new CustomObjectMapper();
+		UserDetails userDetails = (UserDetails) object;
+		JsonNode jsonNode = objectMapper.convertValue(userDetails, JsonNode.class);
+		return jsonNode;
+	}
 
 	public AuditHistory withName(String name) {
 		this.name = name;
@@ -92,14 +90,8 @@ public class AuditHistory implements Serializable {
 		return this;
 	}
 
-	public AuditHistory withContent(EntityContent content) {
+	public JsonNode withContent(JsonNode content) {
 		this.content = content;
-		return this;
+		return this.content;
 	}
-
-
-
-
-
-
 }

@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 /**
  * Created on 16/November/2020 By Author Eresh, Gorantla

@@ -1,10 +1,11 @@
 package com.postgres.jsonb.user.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.postgres.jsonb.user.audit.Auditable;
 import com.postgres.jsonb.user.audit.EntityListener;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,7 +27,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 /**
  * Created on 11/November/2020 By Author Eresh, Gorantla
@@ -46,6 +46,7 @@ public class UserDetails extends Auditable<Long> implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonSerialize(using = ToStringSerializer.class)
 	private Long id;
 
 	@Column(name = "first_name")
