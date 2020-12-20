@@ -33,6 +33,6 @@ public class UserDetailsContent extends EntityContent {
 		this.id = userDetails.getId();
 		this.securityNumber = userDetails.getSecurityNumber();
 		this.updatedAt = userDetails.getUpdatedAt();
-		this.userPreference = userDetails.getUserPreference();
+		//this.userPreference = userDetails.getUserPreference();
 	}
 }

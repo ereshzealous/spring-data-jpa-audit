@@ -53,8 +53,8 @@ public class EntityListener  {
     
     @Transactional(MANDATORY)
     void perform(AuditEntry entry) {
-	    CompletableFuture.runAsync(() -> saveAuditHistory(entry), auditExecutorService);
-	    //saveAuditHistory(entry);
+	    //CompletableFuture.runAsync(() -> saveAuditHistory(entry), auditExecutorService);
+	    saveAuditHistory(entry);
     }
 
     public void saveAuditHistory(AuditEntry entry) {

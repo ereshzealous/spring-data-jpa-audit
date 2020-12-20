@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema#",
+  "$id": "http://my-paintings-api.com/schemas/painting-schema.json",
+  "type": "object",
+  "required" : [
+    "profession", "gender", "emailId"
+  ],
+  "properties" : {
+    "profession" : {
+      "type" : "string",
+      "enum": ["Banker", "Doctor", "Farmer", "Actor", "Singer", "Athlete", "IT Professional"]
+    },
+    "gender" : {
+      "type": "string"
+    },
+    "alternateContacts" : {
+      "type": "array",
+      "items": { "$ref": "#/$defs/tag" }
+    },
+    "dateOfBirth" : {
+      "type": "string",
+      "format": "date"
+    },
+    "maritalStatus" : {
+      "type": "string"
+    },
+    "fatherName" : {
+      "type": "string"
+    },
+    "motherMaidenName" : {
+      "type": "string"
+    },
+    "pinCode" : {
+      "type": "number"
+    },
+    "emailId" : {
+      "type": "string",
+      "pattern": "^\\w+@[a-zA-Z_]+?.[a-zA-Z]{2,3}$"
+    },
+    "licence" : {
+      "type": "string",
+      "minLength": 5
+    },
+    "qualification" : {
+      "type": "string"
+    },
+    "crop" : {
+      "type": "string",
+      "minLength": 3
+    },
+    "farmSize" : {
+      "type": "string"
+    },
+    "latitude" : {
+      "type": "number"
+    },
+    "longitude" : {
+      "type": "number"
+    },
+    "cultivationSeasons" : {
+      "type": "array",
+      "items": { "$ref": "#/$defs/tag" }
+    },
+    "designation" : {
+      "type": "string"
+    },
+    "organization" : {
+      "type": "string"
+    },
+    "employeeCode" : {
+      "type": "string"
+    },
+    "registrationNumber" : {
+      "type": "string"
+    },
+    "sports" : {
+      "type": "array",
+      "items": { "$ref": "#/$defs/tag" }
+    },
+    "designation" : {
+      "type": "string"
+    },
+    "bank" : {
+      "type": "string"
+    },
+    "branchCode" : {
+      "type": "string"
+    },
+    "employeeCode" : {
+      "type": "string"
+    }
+  },
+  "oneOf": [{
+    "properties": {
+      "profession": {
+        "enum": ["Doctor"]
+      }
+    },
+    "required": ["licence", "qualification"]
+    },
+    {
+      "properties": {
+        "profession": {
+          "enum": ["Farmer"]
+        }
+      },
+      "required": ["crop", "farmSize", "latitude", "longitude"]
+    },
+    {
+      "properties": {
+        "profession": {
+          "enum": ["Banker"]
+        }
+      },
+      "required": ["designation", "branch", "branchCode", "employeeCode"]
+    },
+    {
+      "properties": {
+        "profession": {
+          "enum": ["Athlete"]
+        }
+      },
+      "required": ["sports"]
+    },
+    {
+      "properties": {
+        "profession": {
+          "enum": ["Singer"]
+        }
+      },
+      "required": ["registrationNumber"]
+    },
+    {
+      "properties": {
+        "profession": {
+          "enum": ["Actor"]
+        }
+      },
+      "required": ["registrationNumber"]
+    },
+    {
+      "properties": {
+        "profession": {
+          "enum": ["IT Professional"]
+        }
+      },
+      "required": ["designation", "organization", "employeeCode"]
+    }],
+  "$defs": {
+    "tag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "_info" : {
+      "type": "object",
+      "properties": {
+        "crop" : {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

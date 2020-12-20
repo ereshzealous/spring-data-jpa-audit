@@ -1,0 +1,18 @@
+<ehcache:config
+        xmlns:ehcache="http://www.ehcache.org/v3"
+        xmlns:jcache="http://www.ehcache.org/v3/jsr107">
+    <ehcache:service>
+        <jcache:defaults enable-management="true" enable-statistics="true"/>
+    </ehcache:service>
+
+    <ehcache:cache alias="settings" uses-template="DefaultCache">
+    </ehcache:cache>
+
+    <ehcache:cache-template name="DefaultCache">
+        <ehcache:expiry>
+            <ehcache:tti>3600</ehcache:tti>
+        </ehcache:expiry>
+        <ehcache:heap>200</ehcache:heap>
+    </ehcache:cache-template>
+
+</ehcache:config>

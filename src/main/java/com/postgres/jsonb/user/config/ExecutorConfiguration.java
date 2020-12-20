@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class ExecutorConfiguration {
 	@Bean("auditHistory")
 	public ExecutorService auditHistoryExecutorService() {
-		ExecutorService executorService = new ThreadPoolExecutor(20, 30, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<>(100));
+		ExecutorService executorService = new ThreadPoolExecutor(50, 75, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<>(100));
 		return executorService;
 	}
 }

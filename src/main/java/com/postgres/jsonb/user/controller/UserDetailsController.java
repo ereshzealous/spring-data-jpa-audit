@@ -1,10 +1,12 @@
 package com.postgres.jsonb.user.controller;
 
+import com.postgres.jsonb.user.model.WSSaveUserDetailsRequest;
 import com.postgres.jsonb.user.model.WSUserDetailsRequest;
 import com.postgres.jsonb.user.model.WSUserDetailsResponse;
 import com.postgres.jsonb.user.model.WSUserSearchResponse;
 import com.postgres.jsonb.user.service.UserDetailsService;
 import com.postgres.jsonb.user.util.FrequencyEnum;
+import com.postgres.jsonb.user.validation.ValidJson;
 import com.postgres.jsonb.user.vo.UserDetailsSearchVO;
 
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Random;
 
 /**
@@ -36,6 +39,12 @@ public class UserDetailsController {
 	public ResponseEntity<WSUserDetailsResponse> saveUserDetails(@RequestBody WSUserDetailsRequest request) {
 		WSUserDetailsResponse response = userDetailsService.saveUserDetails(request);
 		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/user/save")
+	public ResponseEntity<Object> saveUser(@Valid @RequestBody WSSaveUserDetailsRequest request) {
+		userDetailsService.saveUserDetails(request);
+		return null;
 	}
 
 	@GetMapping("/data")

@@ -3,6 +3,8 @@ package com.postgres.jsonb.user.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 /**
  * Created on 11/November/2020 By Author Eresh, Gorantla
  **/
@@ -14,5 +16,6 @@ public class WSUserDetailsRequest {
 	private String lastName;
 	private String securityNumber;
 	private String contactNumber;
-	private WSUserPreference preference;
+	private String country;
+	private Map<String, Object> details;
 }

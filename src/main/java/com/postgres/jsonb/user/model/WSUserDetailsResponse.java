@@ -22,6 +22,6 @@ public class WSUserDetailsResponse {
 	public WSUserDetailsResponse(UserDetails userDetails) {
 		this.id = userDetails.getId();
 		this.name = Stream.of(userDetails.getFirstName(), userDetails.getLastName()).filter(StringUtils::isNotBlank).collect(Collectors.joining(" "));
-		this.preference = new WSUserPreference(userDetails.getUserPreference());
+		//this.preference = new WSUserPreference(userDetails.getUserPreference());
 	}
 }

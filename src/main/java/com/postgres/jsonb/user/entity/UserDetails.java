@@ -1,5 +1,6 @@
 package com.postgres.jsonb.user.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.postgres.jsonb.user.audit.Auditable;
@@ -61,8 +62,10 @@ public class UserDetails extends Auditable<Long> implements Serializable {
 	@Column(name = "contact_number")
 	private String contactNumber;
 
+	@Column(name = "country")
+	private String country;
+
 	@Column(name = "created_at", updatable = false)
-	@CreationTimestamp
 	private ZonedDateTime createdAt;
 
 	@Column(name = "updated_at", insertable = false)
@@ -70,6 +73,6 @@ public class UserDetails extends Auditable<Long> implements Serializable {
 	private ZonedDateTime updatedAt;
 
 	@Type(type = "jsonb")
-	@Column(columnDefinition = "jsonb", name = "preferences")
-	private UserPreference userPreference;
+	@Column(columnDefinition = "jsonb", name = "details")
+	private JsonNode details;
 }

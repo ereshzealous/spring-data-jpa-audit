@@ -30,6 +30,6 @@ public class WSUserDetails {
 		this.contactNumber = CommonUtils.maskSecureInformation(userDetails.getContactNumber(), 3);
 		this.createdAt = userDetails.getCreatedAt();
 		this.updatedAt = userDetails.getUpdatedAt();
-		this.preference = new WSUserPreference(userDetails.getUserPreference());
+		//this.preference = new WSUserPreference(userDetails.getUserPreference());
 	}
 }
